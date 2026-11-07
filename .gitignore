@@ -1,7 +1,6 @@
 /vendor/
 /node_modules/
 .env
-conexion.php
 hash.php
 *.log
 .DS_Store
