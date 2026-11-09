@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
         $_SESSION['flash_message'] = "Todos los campos son obligatorios.";
         $_SESSION['flash_type'] = "error";
     } else {
-        $stmt = $conexion->prepare("SELECT id, usuario, password FROM usuarios WHERE usuario = ?");
+        $stmt = $conexion->prepare("SELECT id, usuario, password, rol FROM usuarios WHERE usuario = ?");
         $stmt->bind_param("s", $usuario);
         $stmt->execute();
         $resultado = $stmt->get_result();
@@ -25,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
                 $_SESSION['usuario_id'] = $fila['id'];
                 $_SESSION['usuario_nombre'] = $fila['usuario'];
+                $_SESSION['usuario_rol'] = $fila['rol'];
 
                 if ($recordarme) {
                     setcookie("usuario_recordado", $fila['usuario'], time() + (86400 * 30), "/");
