@@ -5,3 +5,4 @@ hash.php
 *.log
 .DS_Store
 Thumbs.db
+/database copy.sql

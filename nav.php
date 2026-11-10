@@ -8,7 +8,8 @@ if (!isset($tema)) {
 <nav>
     <a href="index.php">Inicio</a>
     <?php if (isset($_SESSION['usuario_id'])): ?>
-        <span>Bienvenido, <?php echo htmlspecialchars($_SESSION['usuario_nombre']); ?> (<?php echo htmlspecialchars($_SESSION['usuario_rol']); ?>)</span>
+        <span>Bienvenido, <?php echo htmlspecialchars($_SESSION['usuario_email']); ?> (<?php echo htmlspecialchars($_SESSION['usuario_rol']); ?>)</span>
+        <a href="perfil.php">Mi Panel</a>
         <?php if ($_SESSION['usuario_rol'] === 'admin'): ?>
             <a href="admin.php">Admin</a>
         <?php endif; ?>
