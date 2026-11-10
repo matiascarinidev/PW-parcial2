@@ -50,7 +50,7 @@ CREATE TABLE
   ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- INSERCIÓN DE DATOS DE PRUEBA
--- Contraseña para todos los usuarios de prueba = 12345678
+-- Contraseña para todos los usuarios de prueba = 12345
 INSERT INTO
   usuarios (email, password, rol, perfil_completo, baneado)
 VALUES
