@@ -1,13 +1,13 @@
 <?php
 
-require_once "conexion.php";
-require_once "header.php";
-require_once "nav.php";
+require_once "includes/config.php";
+require_once "clases/Database.php";
+require_once "clases/Perfil.php";
+require_once "includes/header.php";
+require_once "includes/nav.php";
 
 if (!isset($_SESSION['usuario_id'])) {
-    $_SESSION['flash_message'] = "Debes iniciar sesión para crear un perfil.";
-    $_SESSION['flash_type'] = "error";
-    header("Location: login.php");
+    header("Location: " . BASE_URL . "login.php");
     exit();
 }
 
@@ -18,49 +18,39 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
     $telefono = trim($_POST['telefono'] ?? "");
     $biografia = trim($_POST['biografia'] ?? "");
 
-    if ($_SERVER['REQUEST_METHOD'] === "POST") {
-        $usuario = trim($_POST['usuario'] ?? "");
-        $nombre = trim($_POST['nombre'] ?? "");
-        $apellido = trim($_POST['apellido'] ?? "");
-        $telefono = trim($_POST['telefono'] ?? "");
-        $biografia = trim($_POST['biografia'] ?? "");
+    if (empty($usuario) || empty($nombre) || empty($apellido)) {
+        $_SESSION['flash_message'] = "Usuario, nombre y apellido son obligatorios.";
+        $_SESSION['flash_type'] = "error";
+    } else {
+        $perfilObj = new Perfil();
 
-        if (empty($usuario) || empty($nombre) || empty($apellido)) {
-            $_SESSION['flash_message'] = "usuario, nombre y apellido son obligatorios.";
+        if ($perfilObj->existeUsuario($usuario)) {
+            $_SESSION['flash_message'] = "El nombre de usuario ya está en uso.";
             $_SESSION['flash_type'] = "error";
         } else {
-            // Verificar que el usuario no esté tomado
-            $stmt_check = $conexion->prepare("SELECT id_perfil FROM perfiles WHERE usuario = ?");
-            $stmt_check->bind_param("s", $usuario);
-            $stmt_check->execute();
-            $stmt_check->store_result();
-
-            if ($stmt_check->num_rows > 0) {
-                $_SESSION['flash_message'] = "El usuario ya está en uso.";
-                $_SESSION['flash_type'] = "error";
+            if ($perfilObj->crear($_SESSION['usuario_id'], $usuario, $nombre, $apellido, $telefono, $biografia)) {
+                $_SESSION['flash_message'] = "Perfil creado exitosamente.";
+                $_SESSION['flash_type'] = "success";
+                header("Location: " . BASE_URL . "perfil.php");
+                exit();
             } else {
-                $stmt = $conexion->prepare("INSERT INTO perfiles (usuario_id, usuario, nombre, apellido, telefono, biografia) VALUES (?, ?, ?, ?, ?, ?)");
-                $stmt->bind_param("isssss", $_SESSION['usuario_id'], $usuario, $nombre, $apellido, $telefono, $biografia);
-
-                if ($stmt->execute()) {
-                    $stmt_update = $conexion->prepare("UPDATE usuarios SET perfil_completo = TRUE WHERE id = ?");
-                    $stmt_update->bind_param("i", $_SESSION['usuario_id']);
-                    $stmt_update->execute();
-                    $stmt_update->close();
-
-                    $_SESSION['flash_message'] = "Perfil creado exitosamente.";
-                    $_SESSION['flash_type'] = "success";
-                    header("Location: perfil.php");
-                    exit();
-                }
-                $stmt->close();
+                $_SESSION['flash_message'] = "Error al crear el perfil.";
+                $_SESSION['flash_type'] = "error";
             }
-            $stmt_check->close();
         }
     }
 }
 ?>
 <h2>Completa tu Perfil</h2>
+<?php if (isset($_SESSION['flash_message'])): ?>
+    <div class="flash-message flash-<?php echo $_SESSION['flash_type'] ?? 'success'; ?>">
+        <?php
+        echo htmlspecialchars($_SESSION['flash_message']);
+        unset($_SESSION['flash_message']);
+        unset($_SESSION['flash_type']);
+        ?>
+    </div>
+<?php endif; ?>
 <form method="POST">
     <label>NICKNAME: <input type="text" name="usuario" required></label><br>
     <label>NOMBRE: <input type="text" name="nombre" required></label><br>
@@ -69,5 +59,4 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
     <label>BIOGRAFÍA: <textarea name="biografia"></textarea></label><br>
     <button type="submit">Guardar Perfil</button>
 </form>
-
-<?php require_once "footer.php"; ?>
+<?php require_once "includes/footer.php"; ?>

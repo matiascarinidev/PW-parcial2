@@ -1,55 +1,40 @@
 <?php
 
-require_once "conexion.php";
-require_once "header.php";
-require_once "nav.php";
+require_once "includes/config.php";
+require_once "clases/Database.php";
+require_once "clases/Publicacion.php";
+require_once "includes/header.php";
+require_once "includes/nav.php";
 
 if (!isset($_SESSION['usuario_id'])) {
-    $_SESSION['flash_message'] = "Debes iniciar sesión para publicar.";
-    $_SESSION['flash_type'] = "error";
-    header("Location: login.php");
+    header("Location: " . BASE_URL . "login.php");
     exit();
 }
-
-// Verificar si el perfil está completo consultando la base de datos
-$stmt_check_perfil = $conexion->prepare("SELECT perfil_completo FROM usuarios WHERE id = ?");
-$stmt_check_perfil->bind_param("i", $_SESSION['usuario_id']);
-$stmt_check_perfil->execute();
-$res_perfil = $stmt_check_perfil->get_result()->fetch_assoc();
-$stmt_check_perfil->close();
-
-if (!$res_perfil || $res_perfil['perfil_completo'] == 0) {
-    $_SESSION['flash_message'] = "Debes completar tu perfil antes de publicar.";
-    $_SESSION['flash_type'] = "error";
-    header("Location: crear_perfil.php");
-    exit();
-}
-
 
 if ($_SERVER['REQUEST_METHOD'] === "POST") {
-    $titulo = trim($_POST['titulo'] ?? "");
+    $titulo = trim($_POST['titulo'] ?? "Estado");
     $contenido = trim($_POST['contenido'] ?? "");
+    $redirigir = $_POST['redirigir'] ?? "index.php"; 
 
-    if (empty($titulo) || empty($contenido)) {
-        $_SESSION['flash_message'] = "Título y contenido son obligatorios.";
+    if (empty($contenido)) {
+        $_SESSION['flash_message'] = "El contenido es obligatorio.";
         $_SESSION['flash_type'] = "error";
     } else {
-        $stmt = $conexion->prepare("INSERT INTO publicaciones (autor_id, titulo, contenido, estado) VALUES (?, ?, ?, 'pendiente')");
-        $stmt->bind_param("iss", $_SESSION['usuario_id'], $titulo, $contenido);
-        if ($stmt->execute()) {
-            $_SESSION['flash_message'] = "Publicación enviada para revisión.";
+        $pubObj = new Publicacion();
+        if ($pubObj->crear($_SESSION['usuario_id'], $titulo, $contenido)) {
+            $_SESSION['flash_message'] = "Publicación creada. Pendiente de revisión.";
             $_SESSION['flash_type'] = "success";
-            header("Location: index.php");
+
+            header("Location: " . BASE_URL  . $redirigir);
             exit();
         }
-        $stmt->close();
     }
 }
 ?>
 <h2>Crear Publicación</h2>
 <form method="POST">
-    <label>TÍTULO: <input type="text" name="titulo" required></label><br>
+    <label>TÍTULO: <input type="text" name="titulo" placeholder="Opcional" value="Estado"></label><br>
     <label>CONTENIDO: <textarea name="contenido" required></textarea></label><br>
     <button type="submit">Publicar</button>
 </form>
-<?php require_once "footer.php"; ?>
+<?php require_once "includes/footer.php"; ?>
