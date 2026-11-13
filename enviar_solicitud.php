@@ -1,6 +1,6 @@
 <?php
-require_once   'includes/config.php';
-require_once  'clases/Database.php';
+require_once 'includes/config.php';
+require_once 'clases/Database.php';
 require_once 'clases/Amistad.php';
 require_once 'includes/auth.php';
 requireLogin();
@@ -22,5 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_amigo'])) {
 }
 
 $param = $_POST['u'] ?? $_SESSION['usuario_email'] ?? '';
-header("Location: " . BASE_URL . "perfil.php?u=" . urlencode($param) . "&tab=amigos");
+$tab_actual = $_POST['tab_actual'] ?? 'publicaciones';
+header("Location: " . BASE_URL . "perfil.php?u=" . urlencode($param) . "&tab=" . urlencode($tab_actual));
 exit();

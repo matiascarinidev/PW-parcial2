@@ -46,4 +46,18 @@ class Amistad
         $stmt->close();
         return $exito;
     }
+    public function obtenerEstadoRelacion($usuario_id, $otro_usuario_id)
+    {
+        // Busca en ambas direcciones
+        $stmt = $this->db->prepare("
+            SELECT estado FROM amistades 
+            WHERE (usuario_id = ? AND amigo_id = ?) 
+               OR (usuario_id = ? AND amigo_id = ?)
+        ");
+        $stmt->bind_param("iiii", $usuario_id, $otro_usuario_id, $otro_usuario_id, $usuario_id);
+        $stmt->execute();
+        $res = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        return $res ? $res['estado'] : null;
+    }
 }

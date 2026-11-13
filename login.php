@@ -1,9 +1,7 @@
 <?php
-
 require_once "includes/config.php";
 require_once "clases/Database.php";
 require_once "clases/Usuario.php";
-require_once "includes/config.php";
 require_once "includes/header.php";
 require_once "includes/nav.php";
 
@@ -28,7 +26,12 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                 $_SESSION['usuario_email'] = $fila['email'];
                 $_SESSION['usuario_rol'] = $fila['rol'];
 
-                header("Location: " . BASE_URL . ($fila['perfil_completo'] == 0 ? "crear_perfil.php" : "perfil.php"));
+                // Redirección corregida
+                if ($fila['perfil_completo'] == 0) {
+                    header("Location: " . BASE_URL . "crear_perfil.php");
+                } else {
+                    header("Location: " . BASE_URL . "index.php");
+                }
                 exit();
             } else {
                 $_SESSION['flash_message'] = "Usuario o contraseña incorrectas.";
@@ -41,9 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
     }
 }
 ?>
-<h2>Iniciar sesión</h2>
+
 <?php if (isset($_SESSION['flash_message'])): ?>
-    <div class="flash-message flash-<?php echo $_SESSION['flash_type'] ?? 'success'; ?>">
+    <div class="card flash-<?php echo $_SESSION['flash_type'] ?? 'error'; ?>" style="background: var(--danger-color); color: white; text-align: center; margin-bottom: 1rem;">
         <?php
         echo htmlspecialchars($_SESSION['flash_message']);
         unset($_SESSION['flash_message']);
@@ -51,9 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
         ?>
     </div>
 <?php endif; ?>
-<form method="POST">
-    <label>EMAIL: <input type="email" name="email" required></label><br>
-    <label>CONTRASEÑA: <input type="password" name="password" required></label><br>
-    <button type="submit">Iniciar sesión</button>
-</form>
+
+<?php require "componentes/form_login.php"; ?>
+
 <?php require_once "includes/footer.php"; ?>

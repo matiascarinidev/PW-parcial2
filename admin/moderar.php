@@ -1,92 +1,73 @@
 <?php
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../clases/Database.php';
+require_once __DIR__ . '/../clases/Publicacion.php';
+require_once __DIR__ . '/../clases/Usuario.php';
+require_once __DIR__ . '/../includes/auth.php';
 
-require_once  "../clases/Database.php";
-require_once  "../clases/Usuario.php";
-require_once  "../clases/Publicacion.php";
-require_once  "../includes/config.php";
-require_once  "../includes/auth.php";
 requireModeradorOAdmin();
-require_once  "../includes/header.php";
-require_once  "../includes/nav.php";
+
+require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/nav.php';
 
 $pubObj = new Publicacion();
 $usuarioObj = new Usuario();
 
+// Procesar acciones (cambiar estado, banear)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['ocultar_pub'])) {
+    if (isset($_POST['cambiar_estado'])) {
         $id_pub = (int)$_POST['id_publicacion'];
-        $oculta = (int)$_POST['estado_oculta'];
-        $pubObj->cambiarVisibilidad($id_pub, $oculta);
-        $_SESSION['flash_message'] = $oculta ? "Publicación ocultada al público." : "Publicación visible nuevamente.";
+        $nuevo_estado = $_POST['nuevo_estado'] === 'oculta' ? 'oculta' : 'visible';
+        $pubObj->cambiarVisibilidad($id_pub, $nuevo_estado);
+        $_SESSION['flash_message'] = "Estado de la publicación actualizado.";
+        $_SESSION['flash_type'] = "success";
     } elseif (isset($_POST['banear_usuario_mod'])) {
         $id_user = (int)$_POST['id_usuario'];
-        $usuarioObj->cambiarEstadoBaneo($id_user, 1); // Solo banea (1)
-        $_SESSION['flash_message'] = "Usuario suspendido (acción de moderador).";
+        $usuarioObj->cambiarEstadoBaneo($id_user, 1);
+        $_SESSION['flash_message'] = "Usuario suspendido.";
+        $_SESSION['flash_type'] = "success";
     }
-    $_SESSION['flash_type'] = "success";
-    header("Location: " . BASE_URL . "moderar.php");
+    header("Location: " . BASE_URL . "admin/moderar.php");
     exit;
 }
 
-$publicaciones = $pubObj->obtenerTodasModeracion();
+$busqueda = isset($_GET['buscar']) ? trim($_GET['buscar']) : '';
+$publicaciones = $pubObj->obtenerTodasModeracion($busqueda);
 $usuarios = $usuarioObj->obtenerTodos();
-// Nota: filtrar en PHP o agregar método específico si se requiere excluir admins
 ?>
-<h2>Moderación de Contenido</h2>
-<?php if (isset($_SESSION['flash_message'])): ?>
-    <div class="flash-message flash-<?php echo $_SESSION['flash_type'] ?? 'success'; ?>">
-        <?php
-        echo htmlspecialchars($_SESSION['flash_message']);
-        unset($_SESSION['flash_message']);
-        unset($_SESSION['flash_type']);
-        ?>
-    </div>
-<?php endif; ?>
 
-<h3>Publicaciones</h3>
-<table border="1">
-    <tr>
-        <th>Título</th>
-        <th>Autor</th>
-        <th>Estado</th>
-        <th>Acción</th>
-    </tr>
-    <?php foreach ($publicaciones as $pub): ?>
-        <tr>
-            <td><?php echo htmlspecialchars($pub['titulo']); ?></td>
-            <td><?php echo htmlspecialchars($pub['usuario']); ?></td>
-            <td><?php echo $pub['oculta'] ? 'OCULTA' : 'Visible'; ?></td>
-            <td>
-                <form method="POST" style="display:inline;">
-                    <input type="hidden" name="id_publicacion" value="<?php echo $pub['id_publicacion']; ?>">
-                    <input type="hidden" name="estado_oculta" value="<?php echo $pub['oculta'] ? 0 : 1; ?>">
-                    <button type="submit" name="ocultar_pub"><?php echo $pub['oculta'] ? 'Mostrar' : 'Ocultar'; ?></button>
-                </form>
-            </td>
-        </tr>
-    <?php endforeach; ?>
-</table>
+<main class="p-4">
+    <h2 class="mb-4">Panel de Moderación</h2>
 
-<h3>Usuarios (Banear para el público)</h3>
-<table border="1">
-    <tr>
-        <th>Email</th>
-        <th>Usuario</th>
-        <th>Acción</th>
-    </tr>
-    <?php foreach ($usuarios as $user): ?>
-        <?php if ($user['rol'] !== 'admin'): ?>
-            <tr>
-                <td><?php echo htmlspecialchars($user['email']); ?></td>
-                <td><?php echo htmlspecialchars($user['usuario'] ?? 'Sin perfil'); ?></td>
-                <td>
-                    <form method="POST" style="display:inline;">
-                        <input type="hidden" name="id_usuario" value="<?php echo $user['id']; ?>">
-                        <button type="submit" name="banear_usuario_mod">Banear</button>
-                    </form>
-                </td>
-            </tr>
-        <?php endif; ?>
-    <?php endforeach; ?>
-</table>
-<?php require_once  "../includes/footer.php"; ?>
+    <?php if (isset($_SESSION['flash_message'])): ?>
+        <div class="card" style="background: var(--success-color); color: white; text-align: center; margin-bottom: 1rem;">
+            <?php
+            echo htmlspecialchars($_SESSION['flash_message']);
+            unset($_SESSION['flash_message']);
+            unset($_SESSION['flash_type']);
+            ?>
+        </div>
+    <?php endif; ?>
+
+    <section class="mb-4">
+        <h3>Gestión de Publicaciones</h3>
+
+        <!-- Buscador -->
+        <form method="GET" action="<?php echo BASE_URL; ?>admin/moderar.php" class="flex gap-2 mb-4">
+            <input type="text" name="buscar" class="input-field" placeholder="Buscar por contenido o autor..." value="<?php echo htmlspecialchars($busqueda); ?>">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+            <?php if (!empty($busqueda)): ?>
+                <a href="<?php echo BASE_URL; ?>admin/moderar.php" class="btn" style="background: var(--border-color); color: var(--text-main); text-decoration: none; display: inline-flex; align-items: center;">Limpiar</a>
+            <?php endif; ?>
+        </form>
+
+        <?php require __DIR__ . '/../componentes/tabla_mod_publicaciones.php'; ?>
+    </section>
+
+    <section>
+        <h3>Gestión de Usuarios (Banear)</h3>
+        <?php require __DIR__ . '/../componentes/tabla_mod_usuarios.php'; ?>
+    </section>
+</main>
+
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

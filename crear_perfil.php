@@ -1,5 +1,4 @@
 <?php
-
 require_once "includes/config.php";
 require_once "clases/Database.php";
 require_once "clases/Perfil.php";
@@ -23,7 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
         $_SESSION['flash_type'] = "error";
     } else {
         $perfilObj = new Perfil();
-
         if ($perfilObj->existeUsuario($usuario)) {
             $_SESSION['flash_message'] = "El nombre de usuario ya está en uso.";
             $_SESSION['flash_type'] = "error";
@@ -41,22 +39,18 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
     }
 }
 ?>
-<h2>Completa tu Perfil</h2>
 <?php if (isset($_SESSION['flash_message'])): ?>
-    <div class="flash-message flash-<?php echo $_SESSION['flash_type'] ?? 'success'; ?>">
-        <?php
-        echo htmlspecialchars($_SESSION['flash_message']);
+    <div class="card" style="background: var(--danger-color); color: white; text-align: center; margin-bottom: 1rem;">
+        <?php echo htmlspecialchars($_SESSION['flash_message']);
         unset($_SESSION['flash_message']);
-        unset($_SESSION['flash_type']);
-        ?>
+        unset($_SESSION['flash_type']); ?>
     </div>
 <?php endif; ?>
-<form method="POST">
-    <label>NICKNAME: <input type="text" name="usuario" required></label><br>
-    <label>NOMBRE: <input type="text" name="nombre" required></label><br>
-    <label>APELLIDO: <input type="text" name="apellido" required></label><br>
-    <label>TELÉFONO: <input type="text" name="telefono"></label><br>
-    <label>BIOGRAFÍA: <textarea name="biografia"></textarea></label><br>
-    <button type="submit">Guardar Perfil</button>
-</form>
+<div class="max-w-md mx-auto">
+    <?php
+    $perfil = []; // Array vacío porque es nuevo
+    $es_edicion = false;
+    require "componentes/form_perfil.php";
+    ?>
+</div>
 <?php require_once "includes/footer.php"; ?>

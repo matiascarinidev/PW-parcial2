@@ -1,10 +1,9 @@
 <?php
-
-require_once  "includes/config.php";
-require_once  "clases/Database.php";
-require_once  "clases/Usuario.php";
-require_once  "includes/header.php";
-require_once  "includes/nav.php";
+require_once "includes/config.php";
+require_once "clases/Database.php";
+require_once "clases/Usuario.php";
+require_once "includes/header.php";
+require_once "includes/nav.php";
 
 if ($_SERVER['REQUEST_METHOD'] === "POST") {
     $email = trim($_POST['email'] ?? "");
@@ -47,9 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
     }
 }
 ?>
-<h2>Registro de Usuario</h2>
+
 <?php if (isset($_SESSION['flash_message'])): ?>
-    <div class="flash-message flash-<?php echo $_SESSION['flash_type'] ?? 'success'; ?>">
+    <div class="card flash-<?php echo $_SESSION['flash_type'] ?? 'error'; ?>" style="background: <?php echo ($_SESSION['flash_type'] ?? '') === 'error' ? 'var(--danger-color)' : 'var(--success-color)'; ?>; color: white; text-align: center; margin-bottom: 1rem;">
         <?php
         echo htmlspecialchars($_SESSION['flash_message']);
         unset($_SESSION['flash_message']);
@@ -57,10 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
         ?>
     </div>
 <?php endif; ?>
-<form method="POST">
-    <label>EMAIL: <input type="email" name="email" required></label><br>
-    <label>CONTRASEÑA: <input type="password" name="password" maxlength="25" required></label><br>
-    <label>REPETIR CONTRASEÑA: <input type="password" name="password_confirm" maxlength="25" required></label><br>
-    <input type="submit" value="Registrarse">
-</form>
-<?php require_once  "includes/footer.php"; ?>
+
+<?php require "componentes/form_registro.php"; ?>
+
+<?php require_once "includes/footer.php"; ?>
