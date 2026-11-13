@@ -1,12 +1,10 @@
 <?php
 // componentes/lista_amigos.php
-// Inicialización de variables para evitar errores del editor y de ejecución
-
-
 $solicitudes = $solicitudes ?? [];
 $amigos = $amigos ?? [];
 $resultados_busqueda = $resultados_busqueda ?? [];
-$perfil = $perfil ?? ['usuario' => '', 'email' => '']; // Inicialización necesaria
+$perfil = $perfil ?? ['usuario' => '', 'email' => ''];
+$url_perfil = $url_perfil ?? '';
 ?>
 <div class="card">
     <?php if (count($solicitudes) > 0): ?>
@@ -15,7 +13,7 @@ $perfil = $perfil ?? ['usuario' => '', 'email' => '']; // Inicialización necesa
             <?php foreach ($solicitudes as $sol): ?>
                 <li class="flex justify-between items-center mb-2 p-2" style="background: var(--bg-body); border-radius: 4px;">
                     <strong><?php echo htmlspecialchars($sol['usuario']); ?></strong>
-                    <form method='POST' class="flex gap-2">
+                    <form method='POST' action="<?php echo BASE_URL; ?>perfil.php<?php echo $url_perfil; ?>&tab=amigos" class="flex gap-2">
                         <input type='hidden' name='id_amistad' value='<?php echo $sol['id_amistad']; ?>'>
                         <button type='submit' name='accion_solicitud' value='aceptar' class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Aceptar</button>
                         <button type='submit' name='accion_solicitud' value='rechazar' class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Rechazar</button>

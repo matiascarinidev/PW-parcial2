@@ -16,6 +16,7 @@ class Amistad
     }
     public function obtenerSolicitudesPendientes($usuario_id)
     {
+        // Busca las solicitudes donde el usuario es el receptor (amigo_id)
         $stmt = $this->db->prepare("
             SELECT a.id_amistad, perf.usuario 
             FROM amistades a 
@@ -46,9 +47,9 @@ class Amistad
         $stmt->close();
         return $exito;
     }
+
     public function obtenerEstadoRelacion($usuario_id, $otro_usuario_id)
     {
-        // Busca en ambas direcciones
         $stmt = $this->db->prepare("
             SELECT estado FROM amistades 
             WHERE (usuario_id = ? AND amigo_id = ?) 
