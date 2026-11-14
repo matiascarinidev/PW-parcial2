@@ -71,4 +71,14 @@ class Perfil
         $stmt->close();
         return $exito;
     }
+    public function existeUsuarioEnOtroPerfil($usuario, $usuario_id_actual)
+    {
+        $stmt = $this->db->prepare("SELECT id_perfil FROM perfiles WHERE usuario = ? AND usuario_id != ?");
+        $stmt->bind_param("si", $usuario, $usuario_id_actual);
+        $stmt->execute();
+        $stmt->store_result();
+        $existe = $stmt->num_rows > 0;
+        $stmt->close();
+        return $existe;
+    }
 }
